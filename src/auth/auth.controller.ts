@@ -1,19 +1,38 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('login')
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  async login(
+    @Body()
+    body: {
+      email: string;
+      password: string;
+    },
+  ) {
+    return this.authService.login(
+      body.email,
+      body.password,
+    );
   }
 
   @Get('me')
-  findAll() {
-    return this.authService.findAll();
+  @UseGuards(JwtAuthGuard)
+  async me(@Req() request: any) {
+    return request.user;
   }
 }

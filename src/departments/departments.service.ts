@@ -1,26 +1,75 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+
 import { CreateDepartmentDto } from './dto/create-department.dto';
 import { UpdateDepartmentDto } from './dto/update-department.dto';
+import { DepartmentsRepository } from './departments.repository';
 
 @Injectable()
 export class DepartmentsService {
-  create(createDepartmentDto: CreateDepartmentDto) {
-    return 'This action adds a new department';
+  constructor(
+    private readonly departmentRepository: DepartmentsRepository,
+  ) {}
+
+  async findAll() {
+    return this.departmentRepository.findAll();
   }
 
-  findAll() {
-    return `This action returns all departments`;
+  async findById(id: number) {
+    const department =
+      await this.departmentRepository.findById(id);
+
+    if (!department) {
+      throw new NotFoundException(
+        `Department with id ${id} not found`,
+      );
+    }
+
+    return department;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} department`;
+  async create(dto: CreateDepartmentDto) {
+    const existingDepartment =
+      await this.departmentRepository.findByName(dto.name);
+
+    if (existingDepartment) {
+      throw new ConflictException(
+        `Department ${dto.name} already exists`,
+      );
+    }
+
+    return this.departmentRepository.create(dto);
   }
 
-  update(id: number, updateDepartmentDto: UpdateDepartmentDto) {
-    return `This action updates a #${id} department`;
+  async update(
+    id: number,
+    dto: UpdateDepartmentDto,
+  ) {
+    await this.findById(id);
+
+    if (dto.name) {
+      const existingDepartment =
+        await this.departmentRepository.findByName(dto.name);
+
+      if (
+        existingDepartment &&
+        existingDepartment.id !== id
+      ) {
+        throw new ConflictException(
+          `Department ${dto.name} already exists`,
+        );
+      }
+    }
+
+    return this.departmentRepository.update(id, dto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} department`;
+  async delete(id: number) {
+    await this.findById(id);
+
+    return this.departmentRepository.delete(id);
   }
 }

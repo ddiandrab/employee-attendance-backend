@@ -1,34 +1,65 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { EmployeesService } from './employees.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
+import { EmployeesService } from './employees.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('employees')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EmployeesController {
-  constructor(private readonly employeesService: EmployeesService) {}
-
-  @Post()
-  create(@Body() createEmployeeDto: CreateEmployeeDto) {
-    return this.employeesService.create(createEmployeeDto);
-  }
+  constructor(
+    private readonly employeeService: EmployeesService,
+  ) {}
 
   @Get()
-  findAll() {
-    return this.employeesService.findAll();
+  @Roles('ADMIN', 'HR')
+  async findAll() {
+    return this.employeeService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.employeesService.findOne(+id);
+  @Roles('ADMIN', 'HR')
+  async findById(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.employeeService.findById(id);
+  }
+
+  @Post()
+  @Roles('ADMIN', 'HR')
+  async create(
+    @Body() dto: CreateEmployeeDto,
+  ) {
+    return this.employeeService.create(dto);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEmployeeDto: UpdateEmployeeDto) {
-    return this.employeesService.update(+id, updateEmployeeDto);
+  @Roles('ADMIN', 'HR')
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateEmployeeDto,
+  ) {
+    return this.employeeService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.employeesService.remove(+id);
+  @Roles('ADMIN')
+  async delete(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.employeeService.delete(id);
   }
 }
