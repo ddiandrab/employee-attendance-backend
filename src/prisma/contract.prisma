@@ -1,0 +1,73 @@
+// use prisma-next
+
+model User {
+  id           Int                 @id @default(autoincrement())
+  email        String              @unique
+  passwordHash String
+  role         UserRole            @default(EMPLOYEE)
+
+  employee     Employee?
+
+  createdAt    TimestamptzString   @default(now())
+  updatedAt    TimestamptzString   @default(now())
+}
+
+enum UserRole {
+  ADMIN
+  HR
+  EMPLOYEE
+}
+
+model Department {
+  id          Int                 @id @default(autoincrement())
+  name        String              @unique
+  description String?
+
+  employees   Employee[]
+
+  createdAt   TimestamptzString   @default(now())
+  updatedAt   TimestamptzString   @default(now())
+}
+
+model Employee {
+  id                 Int                 @id @default(autoincrement())
+
+  employeeNumber     String              @unique
+  firstName          String
+  lastName           String?
+  email              String?
+  phone              String?
+  photoUrl           String?
+
+  userId             Int                 @unique
+  user               User                @relation(fields: [userId], references: [id])
+
+  departmentId       Int?
+  department         Department?         @relation(fields: [departmentId], references: [id])
+
+  position           String?
+  joinDate            DateString?
+  isActive            Boolean             @default(true)
+
+  attendanceRecords  AttendanceRecord[]
+
+  createdAt          TimestamptzString   @default(now())
+  updatedAt          TimestamptzString   @default(now())
+}
+
+model AttendanceRecord {
+  id             Int                 @id @default(autoincrement())
+
+  employeeId     Int
+  employee       Employee            @relation(fields: [employeeId], references: [id])
+
+  attendanceDate DateString
+
+  checkIn        TimestamptzString?
+  checkOut       TimestamptzString?
+
+  createdAt      TimestamptzString   @default(now())
+  updatedAt      TimestamptzString   @default(now())
+
+  @@unique([employeeId, attendanceDate])
+}

@@ -1,0 +1,70 @@
+// use prisma-next
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(EMPLOYEE)
+  employee Employee?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  EMPLOYEE
+}
+
+model Department {
+  id   String @id @default(uuid())
+  name String @unique
+  employees Employee[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("departments")
+}
+
+model Employee {
+  id           String @id @default(uuid())
+  employeeCode String @unique
+  userId       String?
+  departmentId String?
+  name     String
+  position String?
+  joinDate DateTime
+  user       User?       @relation(fields: [userId], references: [id])
+  department Department? @relation(fields: [departmentId], references: [id])
+  attendanceRecords AttendanceRecord[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([departmentId])
+  @@map("employees")
+}
+
+model AttendanceRecord {
+  id         String           @id @default(uuid())
+  employeeId String
+  date     DateTime
+  checkIn  DateTime?
+  checkOut DateTime?
+  status   AttendanceStatus
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([employeeId, date])
+  @@index([employeeId])
+  @@index([date])
+  @@map("attendance_records")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  HALF_DAY
+}
