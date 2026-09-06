@@ -32,6 +32,20 @@ export class EmployeesService {
     return employee;
   }
 
+  async findByUserId(userId: number) {
+  const employee =
+    await this.employeeRepository
+      .findByUserId(userId);
+
+  if (!employee) {
+    throw new NotFoundException(
+      `Employee for user ${userId} not found`,
+    );
+  }
+
+  return employee;
+  }
+
   async create(dto: CreateEmployeeDto) {
     const existingEmployee =
       await this.employeeRepository.findByEmployeeNumber(

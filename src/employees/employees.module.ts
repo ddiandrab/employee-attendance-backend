@@ -17,5 +17,8 @@ import { EmployeesRepository } from './employees.repository';
     EmployeesRepository,
     EmployeesService,
   ],
+  exports: [
+    EmployeesService,
+  ],
 })
 export class EmployeesModule {}
