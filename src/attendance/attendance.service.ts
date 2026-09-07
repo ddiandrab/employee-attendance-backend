@@ -92,21 +92,61 @@ export class AttendanceService {
     );
   }
 
-  async findMyAttendance(userId: number) {
-    const employee =
-      await this.employeesService.findByUserId(
-        userId,
-      );
+  
+  async findMyAttendance(
+    userId: number,
+    from?: string,
+    to?: string,
+  ) {
+    const employee = await this.employeesService.findByUserId(userId);
+    const dateRange = this.getDateRange(from, to);
+    const records =
+      await this.attendanceRepository
+        .findByEmployeeId(employee.id);
 
-    if (!employee) {
-      throw new NotFoundException(
-        'Employee profile not found',
-      );
-    }
-
-    return this.attendanceRepository
-      .findByEmployeeId(employee.id);
+    return records.filter(
+      (record) =>
+        record.attendanceDate >= dateRange.from &&
+        record.attendanceDate <= dateRange.to,
+    );
   }
+
+  private getDateRange(
+    from?: string,
+    to?: string,
+  ) {
+    const today =
+      new Intl.DateTimeFormat(
+        'en-CA',
+        {
+          timeZone: 'Asia/Jakarta',
+        },
+      ).format(new Date());
+
+    const defaultFrom =
+      `${today.substring(0, 7)}-01`;
+
+    return {
+      from: from ?? defaultFrom,
+      to: to ?? today,
+    };
+  }
+
+  // async findMyAttendance(userId: number) {
+  //   const employee =
+  //     await this.employeesService.findByUserId(
+  //       userId,
+  //     );
+
+  //   if (!employee) {
+  //     throw new NotFoundException(
+  //       'Employee profile not found',
+  //     );
+  //   }
+
+  //   return this.attendanceRepository
+  //     .findByEmployeeId(employee.id);
+  // }
 
   async findAll() {
     return this.attendanceRepository.findAll();

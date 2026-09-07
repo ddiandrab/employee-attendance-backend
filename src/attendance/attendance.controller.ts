@@ -4,6 +4,7 @@ import {
   Post,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -40,11 +41,14 @@ export class AttendanceController {
   @Roles('EMPLOYEE', 'HR', 'ADMIN')
   async findMyAttendance(
     @Req() request: any,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
   ) {
-    return this.attendanceService
-      .findMyAttendance(
-        request.user.userId,
-      );
+    return this.attendanceService.findMyAttendance(
+      request.user.userId,
+      from,
+      to,
+    );
   }
 
   @Get()
