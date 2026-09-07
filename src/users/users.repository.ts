@@ -41,7 +41,7 @@ export class UsersRepository {
     id: number,
     data: {
       email?: string;
-      password?: string;
+      passwordHash?: string;
       role?: 'ADMIN' | 'HR' | 'EMPLOYEE';
     },
   ) {

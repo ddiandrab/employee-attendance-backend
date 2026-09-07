@@ -7,6 +7,7 @@ import {
 import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeesRepository } from './employees.repository';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 
 @Injectable()
@@ -93,6 +94,18 @@ export class EmployeesService {
     }
 
     return this.employeeRepository.update(id, dto);
+  }
+
+  async updateMyProfile(userId: number, dto: UpdateMyProfileDto,
+  ) {
+    const employee = await this.findByUserId(userId);
+
+    return this.employeeRepository.update(employee.id,
+      {
+        phone: dto.phone,
+        photoUrl: dto.photoUrl,
+      },
+    );
   }
 
   async delete(id: number) {

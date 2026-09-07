@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 
@@ -16,6 +17,7 @@ import { EmployeesService } from './employees.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 
 @Controller('employees')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -30,12 +32,24 @@ export class EmployeesController {
     return this.employeeService.findAll();
   }
 
-  @Get(':id')
-  @Roles('ADMIN', 'HR')
-  async findById(
-    @Param('id', ParseIntPipe) id: number,
+  @Get('me')
+  @Roles('EMPLOYEE', 'HR', 'ADMIN')
+  async findMe(@Req() request: any) {
+    return this.employeeService.findByUserId(
+      request.user.userId,
+    );
+  }
+
+  @Patch('me')
+  @Roles('EMPLOYEE', 'HR', 'ADMIN')
+  async updateMyProfile(
+    @Req() request: any,
+    @Body() dto: UpdateMyProfileDto,
   ) {
-    return this.employeeService.findById(id);
+    return this.employeeService.updateMyProfile(
+      request.user.userId,
+      dto,
+    );
   }
 
   @Post()
@@ -44,6 +58,14 @@ export class EmployeesController {
     @Body() dto: CreateEmployeeDto,
   ) {
     return this.employeeService.create(dto);
+  }
+
+  @Get(':id')
+  @Roles('ADMIN', 'HR')
+  async findById(
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.employeeService.findById(id);
   }
 
   @Patch(':id')

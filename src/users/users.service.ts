@@ -1,8 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { UsersRepository } from './users.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -66,5 +67,14 @@ export class UsersService {
     await this.findById(id);
 
     return this.userRepository.delete(id);
+  }
+
+  async updatePassword(userId: number, passwordHash: string) {
+    return this.userRepository.update(
+      userId,
+      {
+        passwordHash,
+      },
+    );
   }
 }
