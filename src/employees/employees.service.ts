@@ -9,14 +9,15 @@ import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeesRepository } from './employees.repository';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
 import { NotificationService } from '../notifications/notification.service';
+import { AuditPublisher } from '../audit/audit.publisher';
 
 
 @Injectable()
 export class EmployeesService {
   constructor(
     private readonly employeeRepository: EmployeesRepository,
-
     private readonly notificationService: NotificationService,
+    private readonly auditPublisher: AuditPublisher,
   ) {}
 
   async findAll() {
@@ -102,6 +103,15 @@ export class EmployeesService {
   async updateMyProfile(userId: number, dto: UpdateMyProfileDto,
   ) {
     const employee = await this.findByUserId(userId);
+    const changedFields: string[] = []; 
+
+    if ( dto.phone !== undefined && dto.phone !== employee.phone ) { 
+      changedFields.push('phone'); 
+    } 
+    
+    if ( dto.photoUrl !== undefined && dto.photoUrl !== employee.photoUrl ) { 
+      changedFields.push('photoUrl'); 
+    }
 
     const updated =
         await this.employeeRepository.update(
@@ -119,10 +129,23 @@ export class EmployeesService {
         .filter(Boolean)
         .join(' ');
 
+      // Notify admin about the profile update
       await this.notificationService
         .notifyEmployeeProfileUpdated(
           employeeName,
         );
+
+      // Audit event for profile update
+      if (changedFields.length > 0) { 
+        await this.auditPublisher.publishEmployeeProfileUpdated({ 
+          eventId: crypto.randomUUID(), 
+          eventType: 'EMPLOYEE_PROFILE_UPDATED', 
+          employeeId: employee.id, 
+          userId: userId, 
+          changedFields: changedFields, 
+          timestamp: new Date().toISOString(), 
+        }); 
+      }
 
       return updated;
   }

@@ -7,12 +7,14 @@ import { EmployeesController } from './employees.controller';
 import { EmployeesService } from './employees.service';
 import { EmployeesRepository } from './employees.repository';
 import { NotificationsModule } from '../notifications/notification.module';
+import { AuditModule } from '../audit/audit.module';
 
 @Module({
   imports: [
     DatabaseModule,
     AuthModule,
-    NotificationsModule
+    NotificationsModule,
+    AuditModule,
   ],
   controllers: [
     EmployeesController
