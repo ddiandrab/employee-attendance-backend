@@ -8,12 +8,15 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { EmployeesRepository } from './employees.repository';
 import { UpdateMyProfileDto } from './dto/update-my-profile.dto';
+import { NotificationService } from '../notifications/notification.service';
 
 
 @Injectable()
 export class EmployeesService {
   constructor(
     private readonly employeeRepository: EmployeesRepository,
+
+    private readonly notificationService: NotificationService,
   ) {}
 
   async findAll() {
@@ -100,12 +103,28 @@ export class EmployeesService {
   ) {
     const employee = await this.findByUserId(userId);
 
-    return this.employeeRepository.update(employee.id,
-      {
-        phone: dto.phone,
-        photoUrl: dto.photoUrl,
-      },
-    );
+    const updated =
+        await this.employeeRepository.update(
+          employee.id,
+          {
+            phone: dto.phone,
+            photoUrl: dto.photoUrl,
+          },
+        );
+
+      const employeeName = [
+        employee.firstName,
+        employee.lastName,
+      ]
+        .filter(Boolean)
+        .join(' ');
+
+      await this.notificationService
+        .notifyEmployeeProfileUpdated(
+          employeeName,
+        );
+
+      return updated;
   }
 
   async delete(id: number) {

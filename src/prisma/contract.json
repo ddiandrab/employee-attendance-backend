@@ -16,6 +16,10 @@
       "model": "Employee",
       "namespace": "public"
     },
+    "notification": {
+      "model": "Notification",
+      "namespace": "public"
+    },
     "user": {
       "model": "User",
       "namespace": "public"
@@ -25,6 +29,15 @@
     "namespaces": {
       "public": {
         "enum": {
+          "NotificationType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "EMPLOYEE_PROFILE_UPDATED",
+                "value": "EMPLOYEE_PROFILE_UPDATED"
+              }
+            ]
+          },
           "UserRole": {
             "codecId": "pg/text@1",
             "members": [
@@ -415,6 +428,119 @@
               "table": "employee"
             }
           },
+          "Notification": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "isRead": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
+              "message": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "recipientId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "NotificationType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "recipient": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "recipientId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "isRead": {
+                  "column": "isRead"
+                },
+                "message": {
+                  "column": "message"
+                },
+                "recipientId": {
+                  "column": "recipientId"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "notification"
+            }
+          },
           "User": {
             "fields": {
               "createdAt": {
@@ -479,6 +605,21 @@
                 },
                 "to": {
                   "model": "Employee",
+                  "namespace": "public"
+                }
+              },
+              "notifications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "recipientId"
+                  ]
+                },
+                "to": {
+                  "model": "Notification",
                   "namespace": "public"
                 }
               }
@@ -815,6 +956,113 @@
                 }
               ]
             },
+            "notification": {
+              "checks": [
+                {
+                  "expression": "\"type\" IN ('EMPLOYEE_PROFILE_UPDATED')",
+                  "name": "notification_type_check_b17f9eb2",
+                  "prefix": "notification_type_check"
+                }
+              ],
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "isRead": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
+                "message": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "recipientId": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "NotificationType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "recipientId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "notification"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "recipientId"
+                  ],
+                  "name": "notification_recipientId_idx_c9527cf8",
+                  "prefix": "notification_recipientId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "user": {
               "checks": [
                 {
@@ -894,6 +1142,12 @@
             }
           },
           "valueSet": {
+            "NotificationType": {
+              "kind": "valueSet",
+              "values": [
+                "EMPLOYEE_PROFILE_UPDATED"
+              ]
+            },
             "UserRole": {
               "kind": "valueSet",
               "values": [
@@ -908,7 +1162,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "3be9c04ab13c928176cd73aa9947d30d36f1dcde18323a882dd4d5fd86a824ce"
+    "storageHash": "43d3ee917570ddf35ee633aee92098b56ad02c982ab4c09a9fbf87409046e1db"
   },
   "capabilities": {
     "postgres": {

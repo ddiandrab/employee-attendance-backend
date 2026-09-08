@@ -53,7 +53,11 @@ export class AttendanceController {
 
   @Get()
   @Roles('ADMIN', 'HR')
-  async findAll() {
-    return this.attendanceService.findAll();
+  async findAll(
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    return this.attendanceService
+      .findAllAttendance(from, to);
   }
 }

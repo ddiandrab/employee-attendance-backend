@@ -29,6 +29,20 @@ export class UsersRepository {
       .first();
   }
 
+  async findByRoles(
+    roles: Array<'ADMIN' | 'HR'>,
+  ) {
+    const users =
+      await this.db.orm.public.User.all();
+
+    return users.filter(
+      (user) =>
+        (user.role === 'ADMIN' ||
+          user.role === 'HR') &&
+        roles.includes(user.role),
+    );
+  }
+
   async create(data: {
     email: string;
     passwordHash: string;

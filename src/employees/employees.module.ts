@@ -6,13 +6,17 @@ import { AuthModule } from '../auth/auth.module';
 import { EmployeesController } from './employees.controller';
 import { EmployeesService } from './employees.service';
 import { EmployeesRepository } from './employees.repository';
+import { NotificationsModule } from '../notifications/notification.module';
 
 @Module({
   imports: [
     DatabaseModule,
-    AuthModule
+    AuthModule,
+    NotificationsModule
   ],
-  controllers: [EmployeesController],
+  controllers: [
+    EmployeesController
+  ],
   providers: [
     EmployeesRepository,
     EmployeesService,

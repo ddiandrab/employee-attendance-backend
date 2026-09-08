@@ -148,9 +148,70 @@ export class AttendanceService {
   //     .findByEmployeeId(employee.id);
   // }
 
-  async findAll() {
-    return this.attendanceRepository.findAll();
-  }
+  async findAllAttendance(
+  from?: string,
+  to?: string,
+) {
+  const dateRange =
+    this.getDateRange(from, to);
+
+  const records =
+    await this.attendanceRepository.findAll();
+
+  const employees =
+    await this.employeesService.findAll();
+
+  const employeeMap = new Map(
+    employees.map((employee) => [
+      employee.id,
+      employee,
+    ]),
+  );
+
+  return records
+    .filter(
+      (record) =>
+        record.attendanceDate >=
+          dateRange.from &&
+        record.attendanceDate <=
+          dateRange.to,
+    )
+    .map((record) => {
+      const employee =
+        employeeMap.get(
+          record.employeeId,
+        );
+
+      return {
+        id: record.id,
+        employeeId: record.employeeId,
+        employeeNumber:
+          employee?.employeeNumber ?? '-',
+        employeeName: employee
+          ? [
+              employee.firstName,
+              employee.lastName,
+            ]
+              .filter(Boolean)
+              .join(' ')
+          : '-',
+        departmentId:
+          employee?.departmentId ?? null,
+        position:
+          employee?.position ?? null,
+        attendanceDate:
+          record.attendanceDate,
+        checkIn: record.checkIn,
+        checkOut: record.checkOut,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.attendanceDate.localeCompare(
+          a.attendanceDate,
+        ),
+    );
+}
 
   private getCurrentBusinessDate(): string {
     return new Intl.DateTimeFormat(

@@ -29,6 +29,10 @@ export class UsersService {
     return this.userRepository.findByEmail(email);
   }
 
+  async findByRoles(roles: Array<'ADMIN' | 'HR'>) {
+    return this.userRepository.findByRoles(roles);
+  }
+
   async create(dto: CreateUserDto) {
     const existingUser = await this.userRepository.findByEmail(dto.email);
 

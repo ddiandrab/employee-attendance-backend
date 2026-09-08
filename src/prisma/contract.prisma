@@ -7,6 +7,7 @@ model User {
   role         UserRole            @default(EMPLOYEE)
 
   employee     Employee?
+  notifications Notification[]
 
   createdAt    TimestamptzString   @default(now())
   updatedAt    TimestamptzString   @default(now())
@@ -70,4 +71,28 @@ model AttendanceRecord {
   updatedAt      TimestamptzString   @default(now())
 
   @@unique([employeeId, attendanceDate])
+}
+
+model Notification {
+  id          Int               @id @default(autoincrement())
+
+  recipientId Int
+  recipient   User              @relation(
+    fields: [recipientId],
+    references: [id]
+  )
+
+  type        NotificationType
+
+  title       String
+  message     String
+
+  isRead      Boolean           @default(false)
+
+  createdAt   TimestamptzString @default(now())
+  updatedAt   TimestamptzString @default(now())
+}
+
+enum NotificationType {
+  EMPLOYEE_PROFILE_UPDATED
 }
